@@ -2,7 +2,8 @@
  *  BORASUS 
  *   - A Text Editor in C++
  ******************************************/
-
+#include <ctype.h>
+#include <iostream>
 #include <stdlib.h>
 #include <termios.h>
 #include <unistd.h>
@@ -42,8 +43,9 @@ void enableRawMode() {
 
 	struct termios raw = orig_termios;
 
-	// c_lflag field stands for “local flags
-	raw.c_lflag &= ~(ECHO);
+	// c_lflag field stands for “local flags 
+	// ICANON turns off canonical mode and reading starts byte-by-byte
+	raw.c_lflag &= ~(ECHO | ICANON);
 
 	// TCSAFLUSH argument specifies when to apply the change
 	tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
@@ -57,7 +59,12 @@ int main() {
 
 	char c;
 	//read one byte from std input into c until EOF(zero) or meets 'q'
-	while (read(STDIN_FILENO, &c, 1) == 1 && c != 'q')
-		;
+	while (read(STDIN_FILENO, &c, 1) == 1 && c != 'q') {
+		if (iscntrl(c)) {
+			printf("%d\n", c);
+		} else {
+			printf("%d ('%c')\n", c, c);
+		}
+	}
   	return 0;
 }
