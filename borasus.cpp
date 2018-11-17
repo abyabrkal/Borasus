@@ -3,9 +3,22 @@
  *   - A Text Editor in C++
  ******************************************/
 
-//#include<iostream>
+#include <stdlib.h>
 #include <termios.h>
 #include <unistd.h>
+
+// Original State of terminal is saved here
+struct termios orig_termios;
+
+/***************************************
+ *   disableRawMode -  TURN ON ECHOING BACK
+ *
+ * Turn on echo mode back before program exits
+ 	Initial saved state of terminal is restored back
+ ***************************************/
+void disableRawMode () {
+	tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_termios);
+}
 
 /***************************************
  *   enableRawMode -  TURN OFF ECHOING
@@ -20,9 +33,14 @@
  	other bits.
  ***************************************/
 void enableRawMode() {
-	struct termios raw;
 
-	tcgetattr(STDIN_FILENO, &raw);
+	tcgetattr(STDIN_FILENO, &orig_termios);
+
+	//register the disable function to be called automatically
+	// when program exits from main(), or by exit()
+	atexit(disableRawMode);
+
+	struct termios raw = orig_termios;
 
 	// c_lflag field stands for “local flags
 	raw.c_lflag &= ~(ECHO);
@@ -30,6 +48,8 @@ void enableRawMode() {
 	// TCSAFLUSH argument specifies when to apply the change
 	tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
 }
+
+
 
 int main() {
 	//turn off echo in Raw mode
