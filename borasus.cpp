@@ -3,7 +3,7 @@
  *   - A Text Editor in C++
  ******************************************/
 #include <ctype.h>
-#include <iostream>
+#include <stdio.h>
 #include <stdlib.h>
 #include <termios.h>
 #include <unistd.h>
@@ -12,13 +12,25 @@
 struct termios orig_termios;
 
 /***************************************
+ *   die -  ERROR HANDLING
+ *
+ * Prints an error message and exits the program
+ ***************************************/
+void die(const char *s) {
+  perror(s);
+  exit(1);
+}
+
+
+/***************************************
  *   disableRawMode -  TURN ON ECHOING BACK
  *
  * Turn on echo mode back before program exits
  	Initial saved state of terminal is restored back
  ***************************************/
 void disableRawMode () {
-	tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_termios);
+	if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_termios) == -1)
+		die("tcsetattr");
 }
 
 /***************************************
@@ -35,7 +47,7 @@ void disableRawMode () {
  ***************************************/
 void enableRawMode() {
 
-	tcgetattr(STDIN_FILENO, &orig_termios);
+	if (tcgetattr(STDIN_FILENO, &orig_termios) == -1) die("tcgetattr");
 	//register the disable function to be called automatically
 	// when program exits from main(), or by exit()
 	atexit(disableRawMode);
@@ -58,7 +70,7 @@ void enableRawMode() {
   	raw.c_cc[VTIME] = 1;
 
 	// TCSAFLUSH argument specifies when to apply the change
-	tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
+	if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw) == -1) die("tcsetattr");
 }
 
 
@@ -71,7 +83,7 @@ int main() {
 	//read one byte from std input into c until EOF(zero) or meets 'q'
 	while (1) {
     	char c = '\0';
-    	read(STDIN_FILENO, &c, 1);
+    	if (read(STDIN_FILENO, &c, 1) == -1 && errno != EAGAIN) die("read");
 		if (iscntrl(c)) {
 			printf("%d\r\n", c);
 		} else {
