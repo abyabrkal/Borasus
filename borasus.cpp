@@ -2,15 +2,20 @@
  *  BORASUS 
  *   - A Text Editor in C++
  ******************************************/
+
+/*** INCLUDES ***/
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <termios.h>
 #include <unistd.h>
 
+/*** DATA ***/
 // Original State of terminal is saved here
 struct termios orig_termios;
 
+
+/*** TERMINAL ***/
 /***************************************
  *   die -  ERROR HANDLING
  *
@@ -74,7 +79,7 @@ void enableRawMode() {
 }
 
 
-
+/*** INIT ***/
 int main() {
 	//turn off echo in Raw mode
 	enableRawMode();
